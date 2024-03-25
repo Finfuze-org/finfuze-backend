@@ -6,8 +6,8 @@ CREATE DATABASE finfuze;
 CREATE TABLE person (
     user_id SERIAL PRIMARY KEY,
     first_name VARCHAR(50)  NOT NULL,
-    last_name  NOT NULL,
-    middle_name VARCHAR
+    last_name  VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50),
     user_email VARCHAR(255) UNIQUE NOT NULL,
     avatar_url TEXT,
     user_password VARCHAR(255),

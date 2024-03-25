@@ -1,6 +1,6 @@
 require('dotenv').configDotenv()
 const express = require('express');
-const connectDB = require('./src/config/connect')
+const pgDB = require('./src/config/connect')
 const morgan = require('morgan')
 const cors = require('cors')
 
@@ -31,11 +31,10 @@ app.use(notFoundMiddleware)
 app.use(error_handler_middleware)
 
 const port = process.env.PORT || 8000
-const uri = process.env.MONGO_URI
 
 const start = async () => {
     try {
-        await console.log(connectDB.options)
+        await console.log(pgDB.options)
         app.listen(port, () => {
             console.log(`listening on port: ${port}...`);
         })

@@ -25,4 +25,4 @@ const pool = new Pool(poolConfig)
 if(pool){
     console.log("connected to pg database")
 }
-module.default = pool
+module.exports = pool
