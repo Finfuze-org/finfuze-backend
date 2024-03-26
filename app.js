@@ -1,6 +1,6 @@
 require('dotenv').configDotenv()
 const express = require('express');
-const pgDB = require('./src/config/connect')
+const connectDB = require('./src/config/connect')
 const morgan = require('morgan')
 const cors = require('cors')
 
@@ -34,7 +34,7 @@ const port = process.env.PORT || 8000
 
 const start = async () => {
     try {
-        await console.log(pgDB.options)
+        await connectDB(process.env.MONGO_URI)
         app.listen(port, () => {
             console.log(`listening on port: ${port}...`);
         })
