@@ -14,11 +14,10 @@ CREATE TABLE person (
     is_verified BOOLEAN DEFAULT FALSE,
     is_admin BOOLEAN DEFAULT FALSE,
     otp TEXT,
-    birth_date Date NOT NULL,
+    birth_date Date,
     otp_time TIMESTAMP,
     google_id VARCHAR(255),
     facebook_id VARCHAR(255),
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
