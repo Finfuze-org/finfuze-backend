@@ -26,6 +26,26 @@ const createUser = async (req,res) => {
     res.status(201).json({user:newUser.rows[0]})
 }
 
+const login = async (req, res)=>{
+    try{
+        const { email, password} = req.body;
+        const users = await pool.query("SELECT * FROM person WHERE user_email = $1", [email])
+        if (users.rows.length === 0) return res.status(401).json({error : "Email is incorrect"});
+        //PASSWORD CHECK
+        const validPassword = await bcrypt.compare(password, users.rows[0].user_password)
+        if(!validPassword) return res.status(401).json({error: "incorrect password"});
+        return res.status(200).json("success")
+        //JWT 
+        
+
+    }catch(error){
+        console.error(error);
+        res.status(500).json({ error:"error"});
+    }
+
+    }
+
 module.exports = {
-    createUser
+    createUser,
+    login
 }
