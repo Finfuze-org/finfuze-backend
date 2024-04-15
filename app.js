@@ -27,7 +27,7 @@ app.all('/', (req, res)=> {
     }
 })
 app.use("/api/v1/auth",authRouter)
-//Error handling middlware
+//Error handling middleware
 app.use(notFoundMiddleware)
 app.use(error_handler_middleware)
 

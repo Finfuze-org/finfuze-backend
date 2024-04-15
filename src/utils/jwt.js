@@ -26,3 +26,8 @@ module.export = {
     createToken,
     decodeToken
 }
+
+const crypto = require('crypto');
+
+const sss = crypto.randomBytes(32).toString('hex');
+console.log(sss);
