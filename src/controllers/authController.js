@@ -9,7 +9,6 @@ const errors = require("../errors/badRequest")
 const createUser = async (req,res) => {
     console.log("here")
     const {first_name, last_name, email, password} = req.body;
-    console.log(first_name, last_name, password);
     const isEmail = await pool.query("SELECT user_email FROM person WHERE user_email = $1",[email])
     if(isEmail.rows.length) return res.status(401).json("Email already exists")
     const salt = await bcrypt.genSalt(10)
@@ -26,6 +25,7 @@ const createUser = async (req,res) => {
          `;
     const subject = "OTP VERIFICATION"
     await sendMail(email,subject,message)
+    console.log('done')
     res.status(201).json({user:newUser.rows[0]})
 }
 

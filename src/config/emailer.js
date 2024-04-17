@@ -1,5 +1,6 @@
  require('dotenv').config()
- const { createTransport } = require('nodemailer')
+ const { createTransport } = require('nodemailer');
+const { CLIENT_RENEG_LIMIT } = require('tls');
 
 
 // class SendMail {
@@ -59,17 +60,21 @@ async function sendMail(email,subject,message) {
     service: process.env.SMTP_SERVICE,
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      // pass: process.env.SMTP_PASS,
+      // user: process.env.SERVICE_ACC_NAME,
+      pass: process.env.SERVICE_PASSWORD,
     },
   });
+
   
-  const info = await transporter.sendMail({
+  const info = await transporter.sendMail({  
     from: `${process.env.SMTP_ACCOUNT} <${process.env.SMTP_USER}>`,
     to: email,
     subject: subject,
     html: message,
   });
-  console.log(info)
+  // console.log(`info: ${info}`);
+  // console.log(info)
 }
 
 module.exports = sendMail;
