@@ -55,7 +55,7 @@ const { CLIENT_RENEG_LIMIT } = require('tls');
 
  
 
-async function sendMail(email,subject,message) {
+async function sendMail(email, subject, message) {
   const transporter = createTransport({
     service: process.env.SMTP_SERVICE,
     auth: {

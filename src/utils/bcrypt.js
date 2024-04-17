@@ -1,19 +1,24 @@
 const bcrypt = require('bcrypt');
 
+const SALT_ROUNDS = 10;
+
+const generateSalt = async () => await bcrypt.genSalt(SALT_ROUNDS);
+
 const hashPassword = async function(password) {
-    const saltRounds =  10;
-    const salt = await  bcrypt.genSalt(saltRounds);
+    // const salt = await  bcrypt.genSalt(SALT_ROUNDS);
+    const salt = await generateSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
 }
 
-// console.log(`hashedPassword: ${ hashPassword('sdk232lsa')}`);
 
-module.exports = hashPassword;
 
-// const start = async function() {
 
-//     console.log(await hashPassword('seil2Asil'));
-// }
 
-// start();
+
+module.exports = {
+    hashPassword,
+    generateSalt,
+};
+
+
