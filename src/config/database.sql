@@ -21,3 +21,5 @@ CREATE TABLE person (
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
