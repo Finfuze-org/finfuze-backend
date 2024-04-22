@@ -5,6 +5,8 @@ const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 // smaller helper function
 const verifyEmailIsUnique = async (email) => await pool.query("SELECT user_email FROM person WHERE user_email = $1", [email]); // verifyEmailIsUnique - expand later to handle check
 
+const getUserOtp = async(id) => await pool.query("SELECT otp FROM person WHERE user_id = $1", [id])
+
 const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
 
@@ -33,4 +35,5 @@ const registerUser = async function(data) {
 
 module.exports = {
     registerUser,
+    getUserOtp,
 }

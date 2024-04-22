@@ -1,12 +1,12 @@
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
-const { hashPassword, } = require('../utils/bcrypt');
+const { compareHashedPassword } = require('../utils/bcrypt');
 const pool = require("../config/connect")
 const sendMail = require("../config/emailer")
 const { otp, } = require("../utils/otp")
 const errors = require("../errors/badRequest")
 
-const { registerUser } = require('../models/authModel');
+const { registerUser, getUserOtp } = require('../models/authModel');
 
 const createUser = async (req, res) => {
 
@@ -16,10 +16,11 @@ const createUser = async (req, res) => {
         const response = await registerUser(userData);
 
         // Error handling - if email already exists
-        if (typeof response === 'string') return res.status(401).json({message: response})
+        if (typeof response === 'string') return res.status(400).json({message: response})
         
         const { otpCode, user } = response;
         
+        // frontend to provide url for CLIENT_URL
         const message  =`<p>Please enter ${otpCode} to verify email and complete sign up.</p>
             <p>This code <b>expires in 30 minutes.</b></p> 
              <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
@@ -27,7 +28,10 @@ const createUser = async (req, res) => {
         const subject = "OTP VERIFICATION";
         await sendMail(email, subject, message)
         console.log('done')
-        res.status(201).json({ message: 'Authenticate your email to complete registration' })
+        res.status(201).json({ 
+            user_id: user.user_id,
+            message: 'Authenticate your email to complete registration'
+         })
         
     } catch (error) {
         console.log(error);
@@ -36,16 +40,21 @@ const createUser = async (req, res) => {
 
 }
 
-// const verifyUser = async(req, res) => {
-//     const code = req.body;
-//     const user = req.params;
+const verifyUser = async(req, res) => {
+    const { otp } = req.body;
+    const { userId } = req.params;
     
-//     console.log({code, user})
+    const userDetails = await getUserOtp(+userId);
+    const { otp: hashedOtp} = userDetails.rows[0]; 
 
-//     return res.status(200).json({message: 'Authenticated'})
-// }
+    const result = await compareHashedPassword(otp, hashedOtp);
+    
+    if (result === 'false') return res.status(401).json({message: 'otp is incorrect'})
+
+    return res.status(200).json({message: 'Authenticated'})
+}
 
 module.exports = {
     createUser,
-    // verifyUser,
+    verifyUser,
 }

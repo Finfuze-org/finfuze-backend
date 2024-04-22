@@ -5,7 +5,6 @@ const SALT_ROUNDS = 10;
 const generateSalt = async () => await bcrypt.genSalt(SALT_ROUNDS);
 
 const hashPassword = async function(password) {
-    // const salt = await  bcrypt.genSalt(SALT_ROUNDS);
     const salt = await generateSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
@@ -13,6 +12,7 @@ const hashPassword = async function(password) {
 
 const compareHashedPassword = async function(password, hashedPassword) {
     const result = await bcrypt.compare(password, hashedPassword);
+    return result;
 }
 
 
@@ -22,6 +22,7 @@ const compareHashedPassword = async function(password, hashedPassword) {
 module.exports = {
     hashPassword,
     generateSalt,
+    compareHashedPassword,
 };
 
 

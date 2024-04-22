@@ -22,3 +22,4 @@ module.exports = {
 }
 
 // module.exports = otp;
+// otp time is too long and how is the expiring handled or checked. Needs to be evaluated
