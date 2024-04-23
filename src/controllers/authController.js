@@ -5,6 +5,7 @@ const pool = require("../config/connect")
 const sendMail = require("../config/emailer")
 const { otp, } = require("../utils/otp")
 const errors = require("../errors/badRequest")
+const createToken = require('../utils/jwt')
 
 const { registerUser, getUserOtp } = require('../models/authModel');
 
@@ -54,7 +55,32 @@ const verifyUser = async(req, res) => {
     return res.status(200).json({message: 'Authenticated'})
 }
 
+const login = async (req, res)=>{
+    try{
+        const { email, password} = req.body;
+        const users = await pool.query("SELECT * FROM person WHERE user_email = $1", [email])
+        if (users.rows.length === 0){ 
+            return res.status(401).json({error : "Email is incorrect"});
+        }
+        //PASSWORD CHECK
+        const validPassword = await bcrypt.compare(password, users.rows[0].user_password)
+        if(!validPassword) {
+             return res.status(401).json({error: "incorrect password"});
+        }
+
+        // Generate JWT token
+        const token = createToken(users.rows[0].user_id); // Assuming createToken function is defined elsewhere
+
+        return res.status(200).json({ success: true, token: token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error" });
+    }
+
+    }
+
 module.exports = {
     createUser,
     verifyUser,
+    login
 }
