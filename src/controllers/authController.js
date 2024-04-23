@@ -20,7 +20,7 @@ const createUser = async (req, res) => {
         
         const { otpCode, user } = response;
         
-        // frontend to provide url for CLIENT_URL
+        // email messaging - frontend to provide url for CLIENT_URL
         const message  =`<p>Please enter ${otpCode} to verify email and complete sign up.</p>
             <p>This code <b>expires in 30 minutes.</b></p> 
              <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
@@ -28,6 +28,7 @@ const createUser = async (req, res) => {
         const subject = "OTP VERIFICATION";
         await sendMail(email, subject, message)
         console.log('done')
+
         res.status(201).json({ 
             user_id: user.user_id,
             message: 'Authenticate your email to complete registration'
