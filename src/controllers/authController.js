@@ -5,8 +5,9 @@ const pool = require("../config/connect")
 const sendMail = require("../config/emailer")
 const { otp, } = require("../utils/otp")
 const errors = require("../errors/badRequest")
+const { createToken } = require('../utils/jwt')
 
-const { registerUser, getUserOtp } = require('../models/authModel');
+const { registerUser, getUserOtp, verifyLoginCredentials } = require('../models/authModel');
 
 const createUser = async (req, res) => {
 
@@ -36,7 +37,7 @@ const createUser = async (req, res) => {
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({message: 'Internal Server Error. Kindly contact webpage admin.'})
+        res.status(500).json({error: `Internal server error, kindly contact admin via ${process.env.SMTP_USER}`})
     }
 
 }
@@ -55,7 +56,29 @@ const verifyUser = async(req, res) => {
     return res.status(200).json({message: 'Authenticated'})
 }
 
+const login = async (req, res) => {
+    try{
+        const { email, password } = req.body;
+        const response = await verifyLoginCredentials(email, password);
+
+        // Error handling - invalid login credentials
+        if (typeof response === 'string') return res.status(401).json({error : response}); 
+        
+        // Generate JWT token
+        // omitting sensitive info from payload
+        const {user_password, otp , ...payload} = response.rows[0];
+        const token = createToken(payload); // Assuming createToken function is defined elsewhere
+
+        return res.status(200).json({ success: true, token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: `Internal server error, kindly contact admin via ${process.env.SMTP_USER}` });
+    }
+
+    }
+
 module.exports = {
     createUser,
     verifyUser,
+    login
 }

@@ -1,9 +1,9 @@
 const pool = require("../config/connect");
-const { hashPassword } = require("../utils/bcrypt");
+const { hashPassword, compareHashedPassword } = require("../utils/bcrypt");
 const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 
 // smaller helper function
-const verifyEmailIsUnique = async (email) => await pool.query("SELECT user_email FROM person WHERE user_email = $1", [email]); // verifyEmailIsUnique - expand later to handle check
+const verifyUserEmail = async (email) => await pool.query("SELECT * FROM person WHERE user_email = $1", [email]); // verifyUserEmail - expand later to handle check
 
 const getUserOtp = async(id) => await pool.query("SELECT otp FROM person WHERE user_id = $1", [id])
 
@@ -11,7 +11,7 @@ const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
 
     // verifying user email
-    const isEmail = await verifyEmailIsUnique(email);
+    const isEmail = await verifyUserEmail(email);
     if (isEmail.rows.length) return ("Email already exists");
 
     console.log('was called')
@@ -32,8 +32,21 @@ const registerUser = async function(data) {
 
 }
 
+const verifyLoginCredentials = async ( email, password ) => {
+    // EMAIL CHECK
+    const users = await verifyUserEmail(email);
+    if (users.rows.length === 0) return 'Email is incorrect';
+
+    // PASSWORD CHECK
+    const validPassword = await compareHashedPassword(password, users.rows[0].user_password);
+    if (!validPassword) return 'incorrect password';
+
+    return users;
+}
+
 
 module.exports = {
     registerUser,
     getUserOtp,
+    verifyLoginCredentials,
 }

@@ -10,7 +10,7 @@ const tokenPayload = (user)=>{
     }
 }
 
-const createToken = ({payload}) => {
+const createToken = (payload) => {
     return jwt.sign(
         payload, 
         secret, {
@@ -21,13 +21,13 @@ const decodeToken = (token) => {
     return jwt.verify(token, secret)
 }
 
-module.export = {
+module.exports = {
     tokenPayload,
     createToken,
     decodeToken
 }
 
-const crypto = require('crypto');
+// const crypto = require('crypto');
 
-const sss = crypto.randomBytes(32).toString('hex');
-console.log(sss);
+// const sss = crypto.randomBytes(32).toString('hex');
+// console.log(sss);
