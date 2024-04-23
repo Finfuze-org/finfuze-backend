@@ -7,7 +7,7 @@ const { otp, } = require("../utils/otp")
 const errors = require("../errors/badRequest")
 const { createToken } = require('../utils/jwt')
 
-const { registerUser, getUserOtp } = require('../models/authModel');
+const { registerUser, getUserOtp, verifyLoginCredentials } = require('../models/authModel');
 
 const createUser = async (req, res) => {
 
@@ -58,19 +58,14 @@ const verifyUser = async(req, res) => {
 const login = async (req, res) => {
     try{
         const { email, password } = req.body;
-        const users = await pool.query("SELECT * FROM person WHERE user_email = $1", [email])
-        if (users.rows.length === 0){ 
-            return res.status(401).json({error : "Email is incorrect"});
-        }
-        //PASSWORD CHECK
-        const validPassword = await compareHashedPassword(password, users.rows[0].user_password);
-        if(!validPassword) {
-             return res.status(401).json({error: "incorrect password"});
-        }
+        const response = await verifyLoginCredentials(email, password);
 
+        // Error handling - invalid login credentials
+        if (typeof response === 'string') return res.status(401).json({error : response}); 
+        
         // Generate JWT token
         // omitting sensitive info from payload
-        const {user_password, otp , ...payload} = users.rows[0];
+        const {user_password, otp , ...payload} = response.rows[0];
         const token = createToken(payload); // Assuming createToken function is defined elsewhere
 
         return res.status(200).json({ success: true, token });

@@ -32,10 +32,21 @@ const registerUser = async function(data) {
 
 }
 
+const verifyLoginCredentials = async ( email, password ) => {
+    // EMAIL CHECK
+    const users = await verifyUserEmail(email);
+    if (users.rows.length === 0) return 'Email is incorrect';
 
+    // PASSWORD CHECK
+    const validPassword = await compareHashedPassword(password, users.rows[0].user_password);
+    if (!validPassword) return 'incorrect password';
+
+    return users;
+}
 
 
 module.exports = {
     registerUser,
     getUserOtp,
+    verifyLoginCredentials,
 }
