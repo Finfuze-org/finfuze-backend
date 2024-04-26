@@ -5,7 +5,12 @@ const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 // smaller helper function
 const verifyUserEmail = async (email) => await pool.query("SELECT * FROM person WHERE user_email = $1", [email]); // verifyUserEmail - expand later to handle check
 
-const getUserOtp = async(id) => await pool.query("SELECT otp FROM person WHERE user_id = $1", [id])
+const getUserOtp = async(id) => await pool.query("SELECT otp FROM person WHERE user_id = $1", [id]);
+
+// this what i was working on
+const userVerified = function() {
+    pool.query('UPDATE person SET is_verified = $1 WHERE user_email = $2', TRUE, [email]);
+}
 
 const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
@@ -23,6 +28,8 @@ const registerUser = async function(data) {
 
     // user registration
     const newUser = await pool.query("INSERT INTO person (first_name, last_name, user_email, user_password, otp, otp_time) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",[first_name, last_name, email, hashedPassword, hashedOtpCode, otpTime]);
+
+    console.log(newUser.rows[0]);
 
 
     return {

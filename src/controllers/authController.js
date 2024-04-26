@@ -1,13 +1,9 @@
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
 const { compareHashedPassword } = require('../utils/bcrypt');
-const pool = require("../config/connect")
-const sendMail = require("../config/emailer")
-const { otp, } = require("../utils/otp")
-const errors = require("../errors/badRequest")
+const { optMessage } = require("../utils/emailTemplates") 
 const { createToken } = require('../utils/jwt')
-
 const { registerUser, getUserOtp, verifyLoginCredentials } = require('../models/authModel');
+
+// const errors = require("../errors/badRequest")
 
 const createUser = async (req, res) => {
 
@@ -21,14 +17,8 @@ const createUser = async (req, res) => {
         
         const { otpCode, user } = response;
         
-        // frontend to provide url for CLIENT_URL
-        const message  =`<p>Please enter ${otpCode} to verify email and complete sign up.</p>
-            <p>This code <b>expires in 30 minutes.</b></p> 
-             <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
-             `;
-        const subject = "OTP VERIFICATION";
-        await sendMail(email, subject, message)
-        console.log('done')
+        await optMessage(email, otpCode);
+        
         res.status(201).json({ 
             user_id: user.user_id,
             message: 'Authenticate your email to complete registration'
@@ -50,7 +40,9 @@ const verifyUser = async(req, res) => {
 
     const result = await compareHashedPassword(otp, hashedOtp);
     
-    if (result === 'false') return res.status(401).json({message: 'otp is incorrect'})
+    if (result === 'false') return res.status(401).json({message: 'otp is incorrect'});
+
+    // const res = userVerified();
 
     return res.status(200).json({message: 'Authenticated'})
 }
