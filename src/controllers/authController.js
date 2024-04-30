@@ -11,13 +11,11 @@ const createUser = async (req, res) => {
         const userData = req.body;
         const { email } = req.body;
         const response = await registerUser(userData);
-
-        // Error handling - if email already exists
-        if (typeof response === 'string') return res.status(400).json({message: response})
+        
         
         const { otpCode, user } = response;
         
-        await optMessage(email, otpCode);
+        await optMessage(email, otpCode); // dev mode - needs internet connection else, it'll return a timeout error
         
         res.status(201).json({ 
             user_id: user.user_id,
@@ -25,8 +23,15 @@ const createUser = async (req, res) => {
          })
         
     } catch (error) {
-        console.log(error);
-        res.status(500).json({error: `Internal server error, kindly contact admin via ${process.env.SMTP_USER}`})
+        if (error.code === '23505') return res.status(400).json({
+            error: true,
+            message: 'An account with this email already exists, please check and try again'
+        });
+        res.status(500).json({
+            error: true,
+            message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+            serverMessage: error.message,
+        })
     }
 
 }

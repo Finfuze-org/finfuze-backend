@@ -7,7 +7,7 @@ const verifyUserEmail = async (email) => await pool.query("SELECT * FROM person 
 
 const getUserOtp = async(id) => await pool.query("SELECT otp FROM person WHERE user_id = $1", [id]);
 
-// this what i was working on
+// this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
 const userVerified = function() {
     pool.query('UPDATE person SET is_verified = $1 WHERE user_email = $2', TRUE, [email]);
 }
@@ -16,8 +16,8 @@ const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
 
     // verifying user email
-    const isEmail = await verifyUserEmail(email);
-    if (isEmail.rows.length) return ("Email already exists");
+    // const isEmail = await verifyUserEmail(email);
+    // if (isEmail.rows.length) return ("Email already exists");
 
     console.log('was called')
 
