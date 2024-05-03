@@ -3,9 +3,7 @@ const pg = require("pg");
 const {Pool} = pg;
 require("dotenv").config();
 
-
 console.log(process.env.PG_HOST);
-
 
 let localConfigPool = {
     user: process.env.PG_USER,
