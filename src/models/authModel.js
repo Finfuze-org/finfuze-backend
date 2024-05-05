@@ -14,6 +14,8 @@ const isUserVerified = async (email) => await pool.query("SELECT is_verified FRO
 // this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
 const userVerified = async (user_id) => await pool.query("UPDATE person SET is_verified = $1 WHERE user_id = $2", [true, user_id]); 
 
+const updateTableBy = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
+
 const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
 
@@ -49,6 +51,7 @@ const verifyLoginCredentials = async ( email, password ) => {
 
 
 module.exports = {
+    updateTableBy,
     registerUser,
     getUserOtp,
     userVerified,

@@ -27,7 +27,7 @@ const createUser = async (req, res) => {
         if (error.code === '23505') {
             return res.status(400).json({
                 error: true,
-                message: 'An account with this email already exists, please check and try again'
+                message: 'An account with this email already exists, login to complete signup, or please check your details and try again'
             });
         }
         res.status(500).json({
@@ -40,28 +40,40 @@ const createUser = async (req, res) => {
 }
 
 const verifyUser = async (req, res) => {
-    const { otp } = req.body;
-    const { userId } = req.params;
+    try {
+        const { otp } = req.body;
+        const { userId } = req.params;
+        
+        const userDetails = await getUserOtp(userId);
+        const { otp: hashedOtp} = userDetails.rows[0];
+        
+        const result = await compareHashedPassword(otp, hashedOtp);
+        
+        if (result === false) return res.status(401).json({message: 'otp is incorrect'});
     
-    const userDetails = await getUserOtp(userId); 
-    const { otp: hashedOtp} = userDetails.rows[0];
-
-    const result = await compareHashedPassword(otp, hashedOtp);
+        await userVerified(userId);
     
-    if (result === false) return res.status(401).json({message: 'otp is incorrect'});
-
-    await userVerified(userId);
-
-    return res.status(200).json({message: 'Authenticated'})
+        return res.status(200).json({message: 'Authenticated'})
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            error: true,
+            message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+            serverMessage: error.message,
+        })
+    }
 }
 
+
 const login = async (req, res) => {
+    console.log('login controller called')
     try{
         const { email, password } = req.body;
         const response = await verifyLoginCredentials(email, password);
 
         // Error handling - invalid login credentials
-        if (typeof response === 'string') return res.status(401).json({error : response}); 
+        // if (typeof response === 'string') return res.status(401).json({error : response}); 
         
         // Generate JWT token
         // omitting sensitive info from payload
