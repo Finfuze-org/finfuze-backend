@@ -1,7 +1,7 @@
 const { compareHashedPassword } = require('../utils/bcrypt');
 const { optMessage } = require("../utils/emailTemplates") 
 const { createToken } = require('../utils/jwt')
-const { registerUser, getUserOtp, userVerified, verifyLoginCredentials } = require('../models/authModel');
+const { registerUser, getUserOtp, userVerified, isUserVerified, verifyLoginCredentials } = require('../models/authModel');
 
 // const errors = require("../errors/badRequest")
 
@@ -17,16 +17,19 @@ const createUser = async (req, res) => {
         await optMessage(email, otpCode); // dev mode - needs internet connection else, it'll return a timeout error
         // TODO: prevent mail from being sent to an invalid mail
         
-        res.status(201).json({ 
+        return res.status(201).json({ 
             user_id: user.user_id,
             message: 'Authenticate your email to complete registration'
          })
         
     } catch (error) {
-        if (error.code === '23505') return res.status(400).json({
-            error: true,
-            message: 'An account with this email already exists, please check and try again'
-        });
+        console.log(error);
+        if (error.code === '23505') {
+            return res.status(400).json({
+                error: true,
+                message: 'An account with this email already exists, please check and try again'
+            });
+        }
         res.status(500).json({
             error: true,
             message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
@@ -41,7 +44,7 @@ const verifyUser = async (req, res) => {
     const { userId } = req.params;
     
     const userDetails = await getUserOtp(userId); 
-    const { otp: hashedOtp} = userDetails.rows[0]; 
+    const { otp: hashedOtp} = userDetails.rows[0];
 
     const result = await compareHashedPassword(otp, hashedOtp);
     

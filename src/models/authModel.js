@@ -9,6 +9,8 @@ const getUserOtp = async(id) => {
     return await pool.query("SELECT otp FROM person WHERE user_id = $1", [id])
 };
 
+const isUserVerified = async (email) => await pool.query("SELECT is_verified FROM person WHERE user_email = $1", [email]);
+
 // this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
 const userVerified = async (user_id) => await pool.query("UPDATE person SET is_verified = $1 WHERE user_id = $2", [true, user_id]); 
 
@@ -50,5 +52,6 @@ module.exports = {
     registerUser,
     getUserOtp,
     userVerified,
+    isUserVerified,
     verifyLoginCredentials,
 }
