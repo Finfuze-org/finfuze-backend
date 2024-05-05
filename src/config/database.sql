@@ -4,7 +4,8 @@ CREATE DATABASE finfuze;
 
 -- Account Creation
 CREATE TABLE person (
-    user_id SERIAL PRIMARY KEY,
+    -- user_id SERIAL PRIMARY KEY,
+    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     first_name VARCHAR(50)  NOT NULL,
     last_name  VARCHAR(50) NOT NULL,
     middle_name VARCHAR(50),
@@ -21,3 +22,5 @@ CREATE TABLE person (
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+

@@ -1,57 +1,86 @@
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
-const pool = require("../config/connect")
-const sendMail = require("../config/emailer")
-const otp = require("../utils/otp")
-const errors = require("../errors/badRequest")
-const createToken = require('../utils/jwt')
+const { compareHashedPassword } = require('../utils/bcrypt');
+const { optMessage } = require("../utils/emailTemplates") 
+const { createToken } = require('../utils/jwt')
+const { registerUser, getUserOtp, userVerified, isUserVerified, verifyLoginCredentials } = require('../models/authModel');
 
-const createUser = async (req,res) => {
-    console.log("here")
-    const {first_name,last_name,email, password} = req.body
-    const isEmail = await pool.query("SELECT user_email FROM person WHERE user_email = $1",[email])
-    if(isEmail.rows.length) return res.status(401).json("Email already exists")
-    const salt = await bcrypt.genSalt(10)
-    const hashedPassword = await bcrypt.hash(password,salt)
-    const otpCode = otp().toString()
-    const otpTime = new Date(Date.now() + 1800000)
-    const hashedOtpCode = await bcrypt.hash(otpCode, salt)
-    console.log("email",email)
-    const newUser = await pool.query("INSERT INTO person (first_name,last_name,user_email,user_password,otp,otp_time) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",[first_name,last_name,email,hashedPassword,hashedOtpCode,otpTime])
-    const message  =`<p>Please enter ${otpCode} to verify email and complete sign up.</p>
-        <p>This code <b>expires in 30 minutes.</b></p> 
-         <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
-         `;
-    const subject = "OTP VERIFICATION"
-    await sendMail(email,subject,message)
-    res.status(201).json({user:newUser.rows[0]})
+// const errors = require("../errors/badRequest")
+
+const createUser = async (req, res) => {
+
+    try {
+        const userData = req.body;
+        const { email } = req.body;
+        const response = await registerUser(userData);
+        
+        const { otpCode, user } = response;
+        
+        await optMessage(email, otpCode); // dev mode - needs internet connection else, it'll return a timeout error
+        // TODO: prevent mail from being sent to an invalid mail
+        
+        return res.status(201).json({ 
+            user_id: user.user_id,
+            message: 'Authenticate your email to complete registration'
+         })
+        
+    } catch (error) {
+        console.log(error);
+        if (error.code === '23505') {
+            return res.status(400).json({
+                error: true,
+                message: 'An account with this email already exists, please check and try again'
+            });
+        }
+        res.status(500).json({
+            error: true,
+            message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+            serverMessage: error.message,
+        })
+    }
+
 }
 
-const login = async (req, res)=>{
+const verifyUser = async (req, res) => {
+    const { otp } = req.body;
+    const { userId } = req.params;
+    
+    const userDetails = await getUserOtp(userId); 
+    const { otp: hashedOtp} = userDetails.rows[0];
+
+    const result = await compareHashedPassword(otp, hashedOtp);
+    
+    if (result === false) return res.status(401).json({message: 'otp is incorrect'});
+
+    await userVerified(userId);
+
+    return res.status(200).json({message: 'Authenticated'})
+}
+
+const login = async (req, res) => {
     try{
-        const { email, password} = req.body;
-        const users = await pool.query("SELECT * FROM person WHERE user_email = $1", [email])
-        if (users.rows.length === 0){ 
-            return res.status(401).json({error : "Email is incorrect"});
-        }
-        //PASSWORD CHECK
-        const validPassword = await bcrypt.compare(password, users.rows[0].user_password)
-        if(!validPassword) {
-             return res.status(401).json({error: "incorrect password"});
-        }
+        const { email, password } = req.body;
+        const response = await verifyLoginCredentials(email, password);
 
+        // Error handling - invalid login credentials
+        if (typeof response === 'string') return res.status(401).json({error : response}); 
+        
         // Generate JWT token
-        const token = createToken(users.rows[0].user_id); // Assuming createToken function is defined elsewhere
+        // omitting sensitive info from payload
+        const {user_password, otp , ...payload} = response.rows[0];
+        const token = createToken(payload); 
 
-        return res.status(200).json({ success: true, token: token });
+        return res.status(200).json({ success: true, token });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Error" });
+        res.status(500).json({ 
+            error: true,
+            message: `Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+        });
     }
 
     }
 
 module.exports = {
     createUser,
+    verifyUser,
     login
 }
