@@ -67,17 +67,10 @@ const verifyUser = async (req, res) => {
 
 
 const login = async (req, res) => {
-    console.log('login controller called')
     try{
-        const { email, password } = req.body;
-        const response = await verifyLoginCredentials(email, password);
-
-        // Error handling - invalid login credentials
-        // if (typeof response === 'string') return res.status(401).json({error : response}); 
-        
         // Generate JWT token
         // omitting sensitive info from payload
-        const {user_password, otp , ...payload} = response.rows[0];
+        const {user_password, otp , ...payload} = req.user;
         const token = createToken(payload); 
 
         return res.status(200).json({ success: true, token });

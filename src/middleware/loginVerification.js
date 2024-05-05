@@ -5,13 +5,15 @@ const { optMessage } = require('../utils/emailTemplates');
 const { hashPassword } = require('../utils/bcrypt');
 
 const loginVerification = async (req, res, next) => {
-    console.log('middleware called');
     try {
         const { email, password } = req.body;
         const response = await verifyLoginCredentials(email, password);
 
         // Error handling - invalid login credentials
-        if (typeof response === 'string') return res.status(401).json({error : 'Incorrect user input, kindly check and try again or signup to login'}); 
+        if (typeof response === 'string') return res.status(401).json({
+            error: true,
+            message : 'Incorrect user input, kindly check and try again or signup to login'
+        }); 
 
         if (!response.rows[0].is_verified) {
             const { user_email: email } = response.rows[0];
@@ -25,9 +27,11 @@ const loginVerification = async (req, res, next) => {
             await optMessage(email, otpCode);
 
             return res.status(403).json({
-                message: 'User not verified, user needs to authenticate email to login',
+                message: 'User is not verified, authenticate account with otp sent to your mail',
             });
         }
+
+        req.user = response.rows[0];
 
         next();
     } catch (error) {
