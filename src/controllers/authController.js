@@ -1,13 +1,9 @@
-const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
 const { compareHashedPassword } = require('../utils/bcrypt');
-const pool = require("../config/connect")
-const sendMail = require("../config/emailer")
-const { otp, } = require("../utils/otp")
-const errors = require("../errors/badRequest")
+const { optMessage } = require("../utils/emailTemplates") 
 const { createToken } = require('../utils/jwt')
+const { registerUser, getUserOtp, userVerified, isUserVerified, verifyLoginCredentials } = require('../models/authModel');
 
-const { registerUser, getUserOtp, verifyLoginCredentials } = require('../models/authModel');
+// const errors = require("../errors/badRequest")
 
 const createUser = async (req, res) => {
 
@@ -15,43 +11,46 @@ const createUser = async (req, res) => {
         const userData = req.body;
         const { email } = req.body;
         const response = await registerUser(userData);
-
-        // Error handling - if email already exists
-        if (typeof response === 'string') return res.status(400).json({message: response})
         
         const { otpCode, user } = response;
         
-        // email messaging - frontend to provide url for CLIENT_URL
-        const message  =`<p>Please enter ${otpCode} to verify email and complete sign up.</p>
-            <p>This code <b>expires in 30 minutes.</b></p> 
-             <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
-             `;
-        const subject = "OTP VERIFICATION";
-        await sendMail(email, subject, message)
-        console.log('done')
-
-        res.status(201).json({ 
+        await optMessage(email, otpCode); // dev mode - needs internet connection else, it'll return a timeout error
+        // TODO: prevent mail from being sent to an invalid mail
+        
+        return res.status(201).json({ 
             user_id: user.user_id,
             message: 'Authenticate your email to complete registration'
          })
         
     } catch (error) {
         console.log(error);
-        res.status(500).json({error: `Internal server error, kindly contact admin via ${process.env.SMTP_USER}`})
+        if (error.code === '23505') {
+            return res.status(400).json({
+                error: true,
+                message: 'An account with this email already exists, please check and try again'
+            });
+        }
+        res.status(500).json({
+            error: true,
+            message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+            serverMessage: error.message,
+        })
     }
 
 }
 
-const verifyUser = async(req, res) => {
+const verifyUser = async (req, res) => {
     const { otp } = req.body;
     const { userId } = req.params;
     
-    const userDetails = await getUserOtp(+userId);
-    const { otp: hashedOtp} = userDetails.rows[0]; 
+    const userDetails = await getUserOtp(userId); 
+    const { otp: hashedOtp} = userDetails.rows[0];
 
     const result = await compareHashedPassword(otp, hashedOtp);
     
-    if (result === 'false') return res.status(401).json({message: 'otp is incorrect'})
+    if (result === false) return res.status(401).json({message: 'otp is incorrect'});
+
+    await userVerified(userId);
 
     return res.status(200).json({message: 'Authenticated'})
 }
@@ -67,12 +66,15 @@ const login = async (req, res) => {
         // Generate JWT token
         // omitting sensitive info from payload
         const {user_password, otp , ...payload} = response.rows[0];
-        const token = createToken(payload); // Assuming createToken function is defined elsewhere
+        const token = createToken(payload); 
 
         return res.status(200).json({ success: true, token });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: `Internal server error, kindly contact admin via ${process.env.SMTP_USER}` });
+        res.status(500).json({ 
+            error: true,
+            message: `Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
+        });
     }
 
     }

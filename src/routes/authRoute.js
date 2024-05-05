@@ -9,7 +9,3 @@ router.post('/login', login)
 
 module.exports = router
 
-/**
- * /signup/:userId/otpVerification
-// router.post('/signup/otp/emailVerification', verifyUser);
- */
