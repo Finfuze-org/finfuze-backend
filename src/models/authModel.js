@@ -3,21 +3,13 @@ const { hashPassword, compareHashedPassword } = require("../utils/bcrypt");
 const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 
 // smaller helper function
-const verifyUserEmail = async (email) => await pool.query("SELECT * FROM person WHERE user_email = $1", [email]);  
-
-const getUserOtp = async(id) => {
-    return await pool.query("SELECT otp FROM person WHERE user_id = $1", [id])
-};
-
-const isUserVerified = async (email) => await pool.query("SELECT is_verified FROM person WHERE user_email = $1", [email]);
-
 const queryTableBySelect = async (column, whereQuerySearch, value) => await pool.query(`SELECT ${column} FROM person WHERE ${whereQuerySearch} = $1`, [value]);
 
 // this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
 const userVerified = async (user_id) => await pool.query("UPDATE person SET is_verified = $1 WHERE user_id = $2", [true, user_id]); 
 
 // queryTableByUpdate
-const updateTableBy = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
+const queryTableByUpdate = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
 
 const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;
@@ -56,10 +48,7 @@ const verifyLoginCredentials = async ( email, password ) => {
 
 module.exports = {
     queryTableBySelect,
-    updateTableBy,
+    queryTableByUpdate,
     registerUser,
-    getUserOtp,
-    userVerified,
-    isUserVerified,
     verifyLoginCredentials,
 }

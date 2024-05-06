@@ -1,5 +1,5 @@
 
-const { updateTableBy, verifyLoginCredentials } = require('../models/authModel');
+const { queryTableByUpdate, verifyLoginCredentials } = require('../models/authModel');
 const { genOtpCode } = require('../utils/otp');
 const { optMessage } = require('../utils/emailTemplates');
 const { hashPassword } = require('../utils/bcrypt');
@@ -22,7 +22,7 @@ const loginVerification = async (req, res, next) => {
 
             console.log(hashedOtp);
 
-            await updateTableBy('otp', [hashedOtp, response.rows[0].user_id]);
+            await queryTableByUpdate('otp', [hashedOtp, response.rows[0].user_id]);
 
             await optMessage(email, otpCode);
 

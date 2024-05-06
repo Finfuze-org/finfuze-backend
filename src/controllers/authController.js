@@ -1,7 +1,7 @@
 const { compareHashedPassword } = require('../utils/bcrypt');
 const { optMessage } = require("../utils/emailTemplates") 
 const { createToken } = require('../utils/jwt')
-const { registerUser, getUserOtp, queryTableBySelect, userVerified, isUserVerified, verifyLoginCredentials, updateTableBy } = require('../models/authModel');
+const { registerUser, queryTableBySelect, queryTableByUpdate } = require('../models/authModel');
 
 // const errors = require("../errors/badRequest")
 
@@ -54,15 +54,13 @@ const verifyUser = async (req, res) => {
         const { userId } = req.params;
         
         const userDetails = await queryTableBySelect('otp', 'user_id', userId);
-        // const userDetails = await getUserOtp(userId);
         const { otp: hashedOtp} = userDetails.rows[0];
         
         const result = await compareHashedPassword(otp, hashedOtp);
         
         if (result === false) return res.status(401).json({message: 'otp is incorrect'});
-    
-        // await userVerified(userId);
-        await updateTableBy('is_verified', [true, userId])
+        
+        await queryTableByUpdate('is_verified', [true, userId])
     
         return res.status(200).json({message: 'Authenticated'})
         
