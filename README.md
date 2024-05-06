@@ -1,4 +1,6 @@
 # Finfuze server application
+Finfuze server api handles the application logic, authentication and security of the finfuze fintech application. The api currently handles sign up and login
+functionality, with further improvements and other application functionalities yet to be implemented.
 
 ## Installation
 * Clone the repo 
