@@ -11,8 +11,7 @@ const optMessage = async function (email, otpCode) {
     console.log("sent");
 
   } catch (error) {
-    console.log(error.errno);
-    // throw new Error(error);
+    throw new Error(error);
   }
 };
 

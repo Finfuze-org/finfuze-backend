@@ -31,7 +31,7 @@ const createUser = async (req, res) => {
             });
         }
 
-        if (error.errno === -4039) {
+        if (error.message === "Error: queryA ETIMEOUT smtp.gmail.com") {
             res.status(400).json({
                 error: true,
                 message: `Connection timeout, kindly check your network connection`
