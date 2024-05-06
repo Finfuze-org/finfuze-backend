@@ -5,9 +5,6 @@ const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 // smaller helper function
 const queryTableBySelect = async (column, whereQuerySearch, value) => await pool.query(`SELECT ${column} FROM person WHERE ${whereQuerySearch} = $1`, [value]);
 
-// this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
-const userVerified = async (user_id) => await pool.query("UPDATE person SET is_verified = $1 WHERE user_id = $2", [true, user_id]); 
-
 // queryTableByUpdate
 const queryTableByUpdate = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
 
