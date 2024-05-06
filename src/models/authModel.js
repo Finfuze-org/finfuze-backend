@@ -11,9 +11,12 @@ const getUserOtp = async(id) => {
 
 const isUserVerified = async (email) => await pool.query("SELECT is_verified FROM person WHERE user_email = $1", [email]);
 
+const queryTableBySelect = async (column, whereQuerySearch, value) => await pool.query(`SELECT ${column} FROM person WHERE ${whereQuerySearch} = $1`, [value]);
+
 // this what i was working on - checks if the user email is verified if not user email would be still accessible for registration
 const userVerified = async (user_id) => await pool.query("UPDATE person SET is_verified = $1 WHERE user_id = $2", [true, user_id]); 
 
+// queryTableByUpdate
 const updateTableBy = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
 
 const registerUser = async function(data) {
@@ -39,7 +42,8 @@ const registerUser = async function(data) {
 
 const verifyLoginCredentials = async ( email, password ) => {
     // EMAIL CHECK
-    const users = await verifyUserEmail(email);
+    const users = await queryTableBySelect('*', 'user_email', email);
+    // const users = await verifyUserEmail(email);
     if (users.rows.length === 0) return 'Email is incorrect';
 
     // PASSWORD CHECK
@@ -51,6 +55,7 @@ const verifyLoginCredentials = async ( email, password ) => {
 
 
 module.exports = {
+    queryTableBySelect,
     updateTableBy,
     registerUser,
     getUserOtp,

@@ -1,7 +1,7 @@
 const { compareHashedPassword } = require('../utils/bcrypt');
 const { optMessage } = require("../utils/emailTemplates") 
 const { createToken } = require('../utils/jwt')
-const { registerUser, getUserOtp, userVerified, isUserVerified, verifyLoginCredentials } = require('../models/authModel');
+const { registerUser, getUserOtp, queryTableBySelect, userVerified, isUserVerified, verifyLoginCredentials, updateTableBy } = require('../models/authModel');
 
 // const errors = require("../errors/badRequest")
 
@@ -30,6 +30,15 @@ const createUser = async (req, res) => {
                 message: 'An account with this email already exists, login to complete signup, or please check your details and try again'
             });
         }
+
+        if (error.errno === -4039) {
+            res.status(400).json({
+                error: true,
+                message: `Connection timeout, kindly check your network connection`
+    
+            })
+        }
+
         res.status(500).json({
             error: true,
             message: ` Something went wrong, kindly contact admin via ${process.env.SMTP_USER}`,
@@ -44,14 +53,16 @@ const verifyUser = async (req, res) => {
         const { otp } = req.body;
         const { userId } = req.params;
         
-        const userDetails = await getUserOtp(userId);
+        const userDetails = await queryTableBySelect('otp', 'user_id', userId);
+        // const userDetails = await getUserOtp(userId);
         const { otp: hashedOtp} = userDetails.rows[0];
         
         const result = await compareHashedPassword(otp, hashedOtp);
         
         if (result === false) return res.status(401).json({message: 'otp is incorrect'});
     
-        await userVerified(userId);
+        // await userVerified(userId);
+        await updateTableBy('is_verified', [true, userId])
     
         return res.status(200).json({message: 'Authenticated'})
         

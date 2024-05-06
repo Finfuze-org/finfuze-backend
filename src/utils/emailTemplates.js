@@ -1,15 +1,21 @@
-const sender = require('../config/emailer');
+const sender = require("../config/emailer");
 
-const optMessage = async function(email, otpCode) {
+const optMessage = async function (email, otpCode) {
+  try {
     const subject = "OTP VERIFICATION";
     const message = `<p>Please enter ${otpCode} to verify email and complete sign up.</p>
-    <p>This code <b>expires in 30 minutes.</b></p> 
-     <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
-     `;
+      <p>This code <b>expires in 30 minutes.</b></p> 
+       <p>Press <a href="${process.env.CLIENT_URL}">here</a> to proceed.</p>                                                               
+       `;
     await sender(email, subject, message);
-    console.log('sent');
+    console.log("sent");
+
+  } catch (error) {
+    console.log(error.errno);
+    // throw new Error(error);
   }
-  
-  module.exports = {
-    optMessage,
-  }
+};
+
+module.exports = {
+  optMessage,
+};
