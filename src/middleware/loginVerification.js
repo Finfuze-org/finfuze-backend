@@ -27,6 +27,7 @@ const loginVerification = async (req, res, next) => {
             await optMessage(email, otpCode);
 
             return res.status(403).json({
+                user_id: response.rows[0].user_id,
                 message: 'User is not verified, authenticate account with otp sent to your mail',
             });
         }
