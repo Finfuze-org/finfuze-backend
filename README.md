@@ -33,9 +33,9 @@ status: 201 Created
 
 ## Email verification
 ### Request
-`POST /:user_id/verification`
+`POST /signup/:user_id/verification`
 ```
-https://finfuze-backend-ouic.onrender.com/api/v1/auth/:user_id/verification
+https://finfuze-backend-ouic.onrender.com/api/v1/auth/signup/:user_id/verification
 ```
 
 ### Response
