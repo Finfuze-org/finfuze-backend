@@ -27,6 +27,8 @@ const createUser = async (req,res) => {
     res.status(201).json({user:newUser.rows[0]})
 }
 
+
+
 const login = async (req, res)=>{
     try{
         const { email, password} = req.body;
