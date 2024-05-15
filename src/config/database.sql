@@ -23,4 +23,34 @@ CREATE TABLE person (
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TYPE transaction_status AS ENUM ('Pending','Confirmed','Failed');
+CREATE TYPE transaction_type AS ENUM ('income','expense');
+CREATE TYPE transaction_method AS ENUM ('credit card','bank transfer');
+-------update transact date----
+CREATE OR REPLACE FUNCTION update_transact_date()
+RETURN TRIGGER AS $$
+BEGIN
+    NEW.transact_date = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+----trigger befor insertion------
+CREATE TRIGGER before_insert_transaction
+BEFORE INSERT ON transaction_history
+FOR EACH ROW
+EXECUTE FUNCTION update_transact_date();
+
+
+CREATE TABLE transaction_history (
+    transact_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES person(user_id),
+    amount NUMERIC (9,4),
+    transact_status transaction_status,
+    transact_type transact_type,
+    payment_method transaction_method,
+    is_verified BOOLEAN DEFAULT false,
+    transact_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
 
