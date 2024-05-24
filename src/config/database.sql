@@ -49,8 +49,17 @@ CREATE TABLE transaction_history (
     transact_status transaction_status,
     transact_type transact_type,
     payment_method transaction_method,
+    receiver_id INTEGER NOT NULL,
     is_verified BOOLEAN DEFAULT false,
     transact_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE account(
+    account_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES person(user_id),
+    account_no INTEGER NOT NULL,
+    account_type VARCHAR(50) DEFAULT 'finfuze',
+    balance NUMERIC(9,4) DEFAULT 0.0000
 )
 
