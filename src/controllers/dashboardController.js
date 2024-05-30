@@ -12,7 +12,13 @@ const sendFinzuze = async (req,res) => {
     if(!transaction.rowCount) return res.status(404).json("transaction failed")
     res.status(201).json("transaction successful") 
 }
-
+const transact = async(req,res) => {
+    const {userId} = req.body
+    const user = await pool.query("SELECT * FROM transaction_history WHERE user_id = $1",[userId])
+    if(!user.length.rowCount) return res.status(404).json({data:"user not found"})
+    res.status(200).json({data:user.rows})
+}
 module.exports = {
-    sendFinzuze
+    sendFinzuze,
+    transact
 }

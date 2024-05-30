@@ -1,7 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const {sendFinzuze} = require("../controllers/dashboardController")
+const {sendFinzuze,transact} = require("../controllers/dashboardController")
 
-router.post("/transact",sendFinzuze)
+router.post("/send",sendFinzuze)
+router.get("/transact",transact )
 
 module.exports = {router}
