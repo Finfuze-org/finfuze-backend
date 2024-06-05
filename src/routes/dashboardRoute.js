@@ -5,4 +5,4 @@ const {sendFinzuze,transact} = require("../controllers/dashboardController")
 router.post("/send",sendFinzuze)
 router.get("/transact",transact )
 
-module.exports = {router}
+module.exports = router

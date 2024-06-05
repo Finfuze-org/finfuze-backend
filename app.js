@@ -9,6 +9,7 @@ const error_handler_middleware = require('./src/middleware/errorHandler');
 const corsOptions = require('./src/config/cors');
 const authRouter  = require("./src/routes/authRoute")
 const dashBoardRouter = require("./src/routes/dashboardRoute")
+const cardRouter = require("./src/routes/bankRoute")
 
 const app = express()
 
@@ -28,7 +29,8 @@ app.all('/', (req, res)=> {
     }
 })
 app.use("/api/v1/auth",authRouter)
-app.use("/api/v1/dashboard")
+app.use("/api/v1/dashboard",dashBoardRouter)
+app.use("/api/v1/card",cardRouter)
 //Error handling middleware
 app.use(notFoundMiddleware)
 app.use(error_handler_middleware)

@@ -19,6 +19,8 @@ CREATE TABLE person (
     otp_time TIMESTAMP,
     google_id VARCHAR(255),
     facebook_id VARCHAR(255),
+    contact_info VARCHAR(50),
+    contact_address VARCHAR(255),
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -63,3 +65,10 @@ CREATE TABLE account(
     balance NUMERIC(9,4) DEFAULT 0.0000
 )
 
+CREATE TABLE CARDS (
+    card_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id REFERENCES person(user_id),
+    account_name VARCHAR (255) NOT NULL,
+    account_no INTEGER NOT NULL,
+    bank_name VARCHAR(100) NOT NULL,
+)
