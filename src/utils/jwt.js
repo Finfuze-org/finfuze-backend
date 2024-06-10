@@ -6,7 +6,8 @@ const exp = process.env.JWT_EXP || '2d';
 
 const tokenPayload = (user)=>{
     return {
-        email: user.email
+        email: user.email,
+        userId:user.user_id
     }
 }
 

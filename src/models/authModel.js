@@ -6,7 +6,7 @@ const { genOtpCode, otpTimeSpan } = require("../utils/otp");
 const queryTableBySelect = async (column, whereQuerySearch, value) => await pool.query(`SELECT ${column} FROM person WHERE ${whereQuerySearch} = $1`, [value]);
 
 // queryTableByUpdate
-const queryTableByUpdate = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2`, [value[0], value[1]])
+const queryTableByUpdate = async(column, value) => await pool.query(`UPDATE person SET ${column} = $1 WHERE user_id = $2 RETURNING *`, [value[0], value[1]])
 
 const registerUser = async function(data) {
     const {first_name, last_name, email, password} = data;

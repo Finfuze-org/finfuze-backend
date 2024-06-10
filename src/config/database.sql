@@ -43,7 +43,11 @@ BEFORE INSERT ON transaction_history
 FOR EACH ROW
 EXECUTE FUNCTION update_transact_date();
 
-
+CREATE TABLE transaction (
+    transaction_id PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES person(user_id),
+    finfuzeAccount_id UUID REFERENCES finfuzeAccount(finfuzeAccount_id)
+)
 CREATE TABLE transaction_history (
     transact_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES person(user_id),
@@ -57,18 +61,38 @@ CREATE TABLE transaction_history (
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 )
 
-CREATE TABLE account(
-    account_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TYPE account_type AS ENUM ('finfuze','banks')
+CREATE TABLE finfuzeAccount(
+    finfuzeAccount_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES person(user_id),
     account_no INTEGER NOT NULL,
-    account_type VARCHAR(50) DEFAULT 'finfuze',
-    balance NUMERIC(9,4) DEFAULT 0.0000
+    account_type account_type,
+    balance NUMERIC(9,2) DEFAULT 0.00,
+    card_id UUID REFERENCES cards(card_id)
+    sender_id UUID REFERENCES transaction_history(transact_id)
 )
 
-CREATE TABLE CARDS (
+CREATE TABLE cards (
     card_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id REFERENCES person(user_id),
     account_name VARCHAR (255) NOT NULL,
     account_no INTEGER NOT NULL,
     bank_name VARCHAR(100) NOT NULL,
+    credit_card_no VARCHAR(50),
+    card_expiry_date Date,
+    CVV INTEGER,
+)
+CREATE TABLE saveBeneficiary (
+    saveBeneficiary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    transaction_history_id UUID REFERENCES transaction_history(transact_id)
+)
+CREATE TABLE smartSave (
+    smartSave_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES person(user_id),
+    finfuzeAccount_id UUID REFERENCES finfuzeAccount (finfuzeAccount_id),
+    interval DATE,
+    custom_interval DATE,
+    amount NUMERIC (9,2) DEFAULT 0.00,
+    desciption VARCHAR (250),
+    duration DATE
 )

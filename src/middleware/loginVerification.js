@@ -17,21 +17,22 @@ const loginVerification = async (req, res, next) => {
 
         if (!response.rows[0].is_verified) {
             const { user_email: email } = response.rows[0];
+            console.log("res",response.rows[0])
             const otpCode = genOtpCode();
             const hashedOtp = await hashPassword(otpCode);
 
             console.log(hashedOtp);
 
             await queryTableByUpdate('otp', [hashedOtp, response.rows[0].user_id]);
-
+            console.log("log1")
             await optMessage(email, otpCode);
-
+            console.log("log2")
             return res.status(403).json({
                 user_id: response.rows[0].user_id,
                 message: 'User is not verified, authenticate account with otp sent to your mail',
             });
         }
-
+        console.log("reqLog",req.user)
         req.user = response.rows[0];
 
         next();

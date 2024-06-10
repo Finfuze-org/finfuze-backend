@@ -8,7 +8,7 @@ const notFoundMiddleware = require('./src/middleware/notFound');
 const error_handler_middleware = require('./src/middleware/errorHandler');
 const corsOptions = require('./src/config/cors');
 const authRouter  = require("./src/routes/authRoute")
-const dashBoardRouter = require("./src/routes/dashboardRoute")
+const dashBoardRouter = require("./src/routes/transactionRoute")
 const cardRouter = require("./src/routes/bankRoute")
 
 const app = express()
