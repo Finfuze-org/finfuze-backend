@@ -81,8 +81,6 @@ const login = async (req, res) => {
     try{
         // Generate JWT token
         // omitting sensitive info from payload
-        console.log("req")
-        console.log("req",req.user)
         const {user_password, otp , ...payload} = req.user;
         const token = createToken(payload); 
 

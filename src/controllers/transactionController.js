@@ -1,4 +1,6 @@
 const {generateAccountNo} = require("../utils/accountNo")
+const pool = require("../config/connect")
+
 
 const createAccountNo = async(req,res) => {
     const finAcc = await generateAccountNo()

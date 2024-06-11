@@ -30,12 +30,13 @@ CREATE TYPE transaction_type AS ENUM ('income','expense');
 CREATE TYPE transaction_method AS ENUM ('credit card','bank transfer');
 -------update transact date----
 CREATE OR REPLACE FUNCTION update_transact_date()
-RETURN TRIGGER AS $$
+RETURNS TRIGGER AS $$
 BEGIN
     NEW.transact_date = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 
 ----trigger befor insertion------
 CREATE TRIGGER before_insert_transaction
@@ -43,45 +44,47 @@ BEFORE INSERT ON transaction_history
 FOR EACH ROW
 EXECUTE FUNCTION update_transact_date();
 
-CREATE TABLE transaction (
-    transaction_id PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES person(user_id),
-    finfuzeAccount_id UUID REFERENCES finfuzeAccount(finfuzeAccount_id)
-)
+
 CREATE TABLE transaction_history (
     transact_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES person(user_id),
+    user_id INTEGER REFERENCES person(user_id),
     amount NUMERIC (9,4),
     transact_status transaction_status,
-    transact_type transact_type,
+    transact_type transaction_type,
     payment_method transaction_method,
     receiver_id INTEGER NOT NULL,
     is_verified BOOLEAN DEFAULT false,
     transact_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE transaction (
+    transaction_id PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES person(user_id),
+    finfuzeAccount_id UUID REFERENCES finfuzeAccount(finfuzeAccount_id)
 )
 
-CREATE TYPE account_type AS ENUM ('finfuze','banks')
+CREATE TYPE account_type AS ENUM ('finfuze','banks');
 CREATE TABLE finfuzeAccount(
     finfuzeAccount_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES person(user_id),
+    user_id INTEGER REFERENCES person(user_id),
     account_no INTEGER NOT NULL,
     account_type account_type,
     balance NUMERIC(9,2) DEFAULT 0.00,
-    card_id UUID REFERENCES cards(card_id)
+    card_id UUID REFERENCES cards(card_id),
     sender_id UUID REFERENCES transaction_history(transact_id)
-)
+);
 
 CREATE TABLE cards (
     card_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id REFERENCES person(user_id),
+    user_id INTEGER REFERENCES person(user_id),
     account_name VARCHAR (255) NOT NULL,
     account_no INTEGER NOT NULL,
     bank_name VARCHAR(100) NOT NULL,
     credit_card_no VARCHAR(50),
     card_expiry_date Date,
-    CVV INTEGER,
-)
+    CVV INTEGER
+);
 CREATE TABLE saveBeneficiary (
     saveBeneficiary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_history_id UUID REFERENCES transaction_history(transact_id)

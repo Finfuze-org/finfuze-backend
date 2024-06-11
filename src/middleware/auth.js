@@ -1,5 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const secret = process.env.JWT_SECRET
 
 const auth_user = async function (req, res, next) {
     console.log('<=== IS USER? ===>');
@@ -11,9 +12,10 @@ const auth_user = async function (req, res, next) {
                 status: 'Failure'
             });
         };
+    
         const token = authorization.substring(7);
-        const jwtDecode = jwt.decode(token)
-        // const req.user = jwtDecode
+        const jwtDecode = jwt.verify(token,secret)
+        req.user = jwtDecode
         next()
 
     } catch (error) {

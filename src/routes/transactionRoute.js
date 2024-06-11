@@ -1,7 +1,9 @@
 const express = require("express")
 const router = express.Router()
-const {sendFinzuze,transact} = require("../controllers/transactionController")
+const {auth_user} = require("../middleware/auth")
+const {createAccountNo,sendFinzuze,transact} = require("../controllers/transactionController")
 
+router.post("/create",auth_user,createAccountNo)
 router.post("/send",sendFinzuze)
 router.get("/transact",transact )
 
