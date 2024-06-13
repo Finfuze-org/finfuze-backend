@@ -52,7 +52,7 @@ CREATE TABLE transaction_history (
     transact_status transaction_status,
     transact_type transaction_type,
     payment_method transaction_method,
-    receiver_id INTEGER NOT NULL,
+    receiver_id BIGINT NOT NULL,
     is_verified BOOLEAN DEFAULT false,
     transact_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -68,7 +68,7 @@ CREATE TYPE account_type AS ENUM ('finfuze','banks');
 CREATE TABLE finfuzeAccount(
     finfuzeAccount_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id INTEGER REFERENCES person(user_id),
-    account_no INTEGER NOT NULL,
+    account_no VARCHAR(50) NOT NULL,
     account_type account_type,
     balance NUMERIC(9,2) DEFAULT 0.00,
     card_id UUID REFERENCES cards(card_id),
