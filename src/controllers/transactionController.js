@@ -14,21 +14,33 @@ const createAccountNo = async(req,res) => {
 }
 
 const sendFinzuze = async (req,res) => {
-    const {receiverAcc, amount} = req.body
+    const {receiverAcc, amount, paymentMethod} = req.body
     const userId = req.user.user_id
     try {
+        if(paymentMethod === "bank"){
+            await pool.query("")
+        }
         await pool.query("BEGIN")
         const userIdAcc = await pool.query("SELECT * FROM finfuzeAccount WHERE user_id = $1",[userId])
         const sendIdAcc = await pool.query("SELECT * FROM finfuzeAccount WHERE account_no =$1",[receiverAcc])
-        if(!userIdAcc.rows.length === 0 || !sendIdAcc.rows.length === 0) return res.status(404).json("User not found")
+        if(!userIdAcc.rows.length === 0 || !sendIdAcc.rows.length === 0) {
+            await pool.query("ROLLBACK");
+            return res.status(404).json("User not found")
+        }
         const user = userIdAcc.rows[0]
         const receiver = sendIdAcc.rows[0]
-        if(user.balance < amount) return res.status(401).json("insufficient balance")
+        if(user.balance < amount) {
+            await pool.query("ROLLBACK");
+            return res.status(401).json("insufficient balance")
+        }
         const acountWith = user.balance -= amount
         await pool.query("UPDATE finfuzeAccount SET balance = $1 WHERE user_id =$2",[acountWith,userId])
         await pool.query("UPDATE finfuzeAccount SET balance = balance + $1 WHERE account_no = $2",[amount,receiverAcc])
-        const transaction = await pool.query("INSERT INTO transaction_history (amount,transact_status,transact_type,payment_method,receiver_id,user_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",[amount,'Pending','expense','credit card',receiverAcc,userId])
-        if(!transaction.rowCount === 0) return res.status(404).json("transaction failed")
+        const transaction = await pool.query("INSERT INTO transaction_history (amount,transact_status,transact_type,payment_method,receiver_id,user_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",[amount,'Pending','expense',paymentMethod,receiverAcc,userId])
+        if(!transaction.rowCount === 0) {
+            await pool.query("ROLLBACK");
+            return res.status(404).json("transaction failed")
+        }
         await pool.query("COMMIT")
         res.status(201).json("transaction successful") 
     } catch (error) {
@@ -36,6 +48,7 @@ const sendFinzuze = async (req,res) => {
         res.status(404).json({data:error.message})
     }
 }
+
 const transact = async(req,res) => {
     const {userId} = req.body
     const user = await pool.query("SELECT * FROM transaction_history WHERE user_id = $1",[userId])
