@@ -100,8 +100,44 @@ const transact = async(req,res) => {
     if(!user.length.rowCount) return res.status(404).json({data:"user not found"})
     res.status(200).json({data:user.rows})
 }
+
+const getTransaction = async (req,res) => {
+    const userId = req.user.user_id
+    const userTransact =  await pool.query("SELECT * FROM transaction_history WHERE user_id = $1",[userId])
+    if(userTransact.rows.length === 0) return res.status(404).json("transaction not found")
+    res.status(202).json({data:userTransact})
+}
+
+const getSingleTransaction = async(req,res) => {
+    const userId = req.user.user_id
+    const receiverId = req.params.id;
+    const transact = await pool.query("SELECT * FROM transaction_history WHERE user_id = $1 AND transact_id = $2",[userId,receiverId])
+    if(transact.rows.length === 0) return res.status(404).json("transaction not found")
+    res.status(202).json({data:transact})
+}
+
+const addBeneficiary = async (req,res) => {
+    const userId = req.user.user_id
+    const beneId = req.params.id;
+    const userExist = await pool.query("SELECT * FROM saveBeneficiary WHERE transaction_history_id = $1",[beneId])
+    if(userExist.rows.length > 0) return res.status(404).json("user already exist")
+    const transactId = await pool.query("SELECT * FROM transaction_history WHERE user_id =$1 AND transact_id = $2",[userId,beneId])
+    if(transactId.rows.length === 0) return res.status(404).json("beneficiary not added")
+    res.status(201).json({data:transactId})
+}
+
+const removeBeneficiary = async (req,res) => {
+    const beneId = req.params.id;
+    const delUser = await pool.query("DELETE FROM saveBeneficiary WHERE transaction_history_id = $1",[beneId])
+    if(delUser.rows.length > 0) return res.status(404).json('failed to delete')
+    res.status(202).json("user remove")
+}
 module.exports = {
     sendFinzuze,
     transact,
-    createAccountNo
+    createAccountNo,
+    getTransaction,
+    getSingleTransaction,
+    addBeneficiary,
+    removeBeneficiary
 }

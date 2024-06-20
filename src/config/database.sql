@@ -85,10 +85,12 @@ CREATE TABLE cards (
     card_expiry_date Date,
     CVV INTEGER
 );
+
 CREATE TABLE saveBeneficiary (
     saveBeneficiary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_history_id UUID REFERENCES transaction_history(transact_id)
 )
+
 CREATE TABLE smartSave (
     smartSave_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES person(user_id),
