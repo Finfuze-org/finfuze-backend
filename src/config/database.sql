@@ -71,6 +71,8 @@ CREATE TABLE finfuzeAccount(
     account_no VARCHAR(50) NOT NULL,
     account_type account_type,
     balance NUMERIC(9,2) DEFAULT 0.00,
+    income NUMERIC (9,2) DEFAULT 0.00,
+    expenses NUMERIC (9,2) DEFAULT 0.00,
     card_id UUID REFERENCES cards(card_id),
     sender_id UUID REFERENCES transaction_history(transact_id)
 );
@@ -89,7 +91,7 @@ CREATE TABLE cards (
 CREATE TABLE saveBeneficiary (
     saveBeneficiary_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     transaction_history_id UUID REFERENCES transaction_history(transact_id)
-)
+);
 
 CREATE TABLE smartSave (
     smartSave_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
